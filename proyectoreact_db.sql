@@ -7,23 +7,22 @@ USE proyectoreact_db;
 -- ===========================
 -- TABLA USUARIOS
 -- ===========================
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     contrasena VARCHAR(255) NOT NULL,
-    rol VARCHAR(20) NOT NULL DEFAULT 'usuario', -- 'usuario' o 'admin'
+    rol VARCHAR(20) NOT NULL DEFAULT 'usuario',
     creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
     actualizado_en DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- ===========================
--- TABLA TITULOS (PELÍCULAS Y SERIES)
+-- TABLA PELICULAS
 -- ===========================
-CREATE TABLE titulos (
+CREATE TABLE IF NOT EXISTS peliculas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(150) NOT NULL,
-    tipo ENUM('pelicula','serie') NOT NULL,
     descripcion TEXT,
     fecha_estreno DATE,
     url_poster VARCHAR(255),
@@ -36,79 +35,51 @@ CREATE TABLE titulos (
 -- ===========================
 -- TABLA GENEROS
 -- ===========================
-CREATE TABLE generos (
+CREATE TABLE IF NOT EXISTS generos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- ===========================
--- TABLA INTERMEDIA TITULOS ↔ GENEROS
+-- TABLA INTERMEDIA PELICULAS ↔ GENEROS
 -- ===========================
-CREATE TABLE titulos_generos (
-    id_titulo INT NOT NULL,
+CREATE TABLE IF NOT EXISTS peliculas_generos (
+    id_pelicula INT NOT NULL,
     id_genero INT NOT NULL,
-    PRIMARY KEY (id_titulo, id_genero),
-    FOREIGN KEY (id_titulo) REFERENCES titulos(id) ON DELETE CASCADE,
+    PRIMARY KEY (id_pelicula, id_genero),
+    FOREIGN KEY (id_pelicula) REFERENCES peliculas(id) ON DELETE CASCADE,
     FOREIGN KEY (id_genero) REFERENCES generos(id) ON DELETE CASCADE
 );
 
 -- ===========================
--- TABLA COMENTARIOS / RESEÑAS
+-- TABLA COMENTARIOS
 -- ===========================
-CREATE TABLE comentarios (
+CREATE TABLE IF NOT EXISTS comentarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_titulo INT NOT NULL,
+    id_pelicula INT NOT NULL,
     id_usuario INT NOT NULL,
     contenido TEXT NOT NULL,
     creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_titulo) REFERENCES titulos(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_pelicula) REFERENCES peliculas(id) ON DELETE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
 -- ===========================
--- TABLA VALORACIONES
--- ===========================
-CREATE TABLE valoraciones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_titulo INT NOT NULL,
-    id_usuario INT NOT NULL,
-    puntuacion INT CHECK (puntuacion >= 1 AND puntuacion <= 5),
-    creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_titulo) REFERENCES titulos(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE
-);
-
--- ===========================
--- TABLA EPISODIOS (SOLO PARA SERIES)
--- ===========================
-CREATE TABLE episodios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_titulo INT NOT NULL,
-    temporada INT NOT NULL,
-    numero_episodio INT NOT NULL,
-    titulo VARCHAR(150),
-    descripcion TEXT,
-    fecha_estreno DATE,
-    FOREIGN KEY (id_titulo) REFERENCES titulos(id) ON DELETE CASCADE
-);
-
--- ===========================
--- DATOS DE EJEMPLO
+-- DATOS DE EJEMPLO (SOLO USUARIOS Y GÉNEROS)
 -- ===========================
 
--- Usuarios de prueba
+-- 1. Limpiar y Crear Usuarios (Password: 123)
+DELETE FROM usuarios WHERE email IN ('admin@cine.com', 'user1@cine.com');
 INSERT INTO usuarios (nombre_usuario, email, contrasena, rol) VALUES
-('admin', 'admin@cine.com', 'hashed_password_aqui', 'admin'),
-('usuario1', 'user1@cine.com', 'hashed_password_aqui', 'usuario');
+('admin', 'admin@cine.com', '123', 'admin'),
+('usuario1', 'user1@cine.com', '123', 'usuario');
 
--- Géneros de ejemplo
-INSERT INTO generos (nombre) VALUES
-('Acción'),
-('Comedia'),
-('Drama'),
-('Terror'),
+-- 2. Insertar Géneros
+INSERT IGNORE INTO generos (nombre) VALUES
+('Acción'), 
+('Comedia'), 
+('Drama'), 
+('Terror'), 
 ('Ciencia Ficción'),
-('Animación'),
-('Romance');
+('Romance'),
+('Animación');

@@ -1,16 +1,12 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
-import { Usuario } from "./Usuario.js";
-import { Pelicula } from "./Pelicula.js";
+import db from '../config/db.js';
 
-export const Comentario = sequelize.define("Comentario", {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  contenido: { type: DataTypes.TEXT, allowNull: false },
-  valoracion: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
-}, { timestamps: true });
-
-// Relaciones
-Comentario.belongsTo(Usuario, { foreignKey: "usuarioId" });
-Comentario.belongsTo(Pelicula, { foreignKey: "peliculaId" });
-Usuario.hasMany(Comentario, { foreignKey: "usuarioId" });
-Pelicula.hasMany(Comentario, { foreignKey: "peliculaId" });
+const Comentario = {
+    getByPelicula: async (id_titulo) => {
+        const [rows] = await db.query(
+            'SELECT c.*, u.nombre_usuario FROM comentarios c JOIN usuarios u ON c.id_usuario = u.id WHERE id_titulo = ?', 
+            [id_titulo]
+        );
+        return rows;
+    }
+};
+export default Comentario;

@@ -1,24 +1,22 @@
-import express from "express";
-import { sequelize } from "./config/db.js";
-import usuarioRoutes from "./routes/usuarioRoutes.js";
-import peliculaRoutes from "./routes/peliculaRoutes.js";
-import comentarioRoutes from "./routes/comentarioRoutes.js";
+import express from 'express';
+import cors from 'cors';
+import 'dotenv/config';
+
+import usuarioRoutes from './routes/usuarioRoutes.js';
+import peliculaRoutes from './routes/peliculaRoutes.js';
+import comentarioRoutes from './routes/comentarioRoutes.js';
+import generoRoutes from './routes/generoRoutes.js';
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
-// Rutas
-app.use("/api/usuarios", usuarioRoutes);
-app.use("/api/peliculas", peliculaRoutes);
-app.use("/api/comentarios", comentarioRoutes);
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/peliculas', peliculaRoutes);
+app.use('/api/comentarios', comentarioRoutes);
+app.use('/api/generos', generoRoutes);
 
-// Sincronizar DB y levantar servidor
-(async () => {
-  try {
-    await sequelize.sync({ alter: true });
-    console.log(" Tablas sincronizadas correctamente");
-    app.listen(3001, () => console.log(" Servidor corriendo en http://localhost:3001"));
-  } catch (err) {
-    console.error(" Error al sincronizar tablas:", err);
-  }
-})();
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`✅ Servidor Cine-App corriendo en: http://localhost:${PORT}`);
+});

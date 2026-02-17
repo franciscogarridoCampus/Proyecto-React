@@ -1,22 +1,43 @@
-import * as usuarioService from "../services/usuarioService.js";
+import db from '../config/db.js'; // Asegúrate de que esta ruta a tu conexión sea correcta
 
-export const registrar = async (req, res) => {
-  try {
-    const user = await usuarioService.crearUsuario(req.body);
-    res.status(201).json(user);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
-
+// CONTROLADOR DE LOGIN
 export const login = async (req, res) => {
-  const { correo, password } = req.body;
-  const user = await usuarioService.validarLogin(correo, password);
-  if (!user) return res.status(401).json({ msg: "Credenciales inválidas" });
-  res.json(user);
+    const { email, contrasena } = req.body;
+
+    try {
+        // 1. Buscamos al usuario por email en la base de datos
+        const [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+        
+        if (rows.length === 0) {
+            return res.status(401).json({ mensaje: "Usuario no encontrado" });
+        }
+
+        const usuario = rows[0];
+
+        // 2. COMPARACIÓN DIRECTA (Texto plano para que coincida con admin123)
+        if (contrasena === usuario.contrasena) {
+            // ÉXITO: Enviamos los datos que React guardará en el localStorage
+            return res.json({
+                id: usuario.id,
+                nombre: usuario.nombre_usuario,
+                rol: usuario.rol
+            });
+        } else {
+            // FALLO: La contraseña no coincide
+            return res.status(401).json({ mensaje: "Contraseña incorrecta" });
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: "Error interno del servidor" });
+    }
 };
 
-export const listarUsuarios = async (req, res) => {
-  const users = await usuarioService.obtenerUsuarios();
-  res.json(users);
+// CONTROLADOR DE REGISTRO (Añadido para evitar errores en las rutas)
+export const register = async (req, res) => {
+    try {
+        res.status(200).json({ mensaje: "Función de registro lista para implementar" });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al registrar" });
+    }
 };

@@ -1,10 +1,8 @@
-import express from "express";
-import * as comentarioController from "../controllers/comentarioController.js";
+import express from 'express'; // <--- Aquí estaba el error
+import * as comentarioController from '../controllers/comentarioController.js';
 
 const router = express.Router();
 
-router.post("/", comentarioController.crear);
-router.get("/pelicula/:peliculaId", comentarioController.listarPorPelicula);
-router.delete("/:id", comentarioController.eliminar);
+router.get('/:idTitulo', comentarioController.getComentarios);
 
 export default router;

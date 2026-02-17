@@ -1,10 +1,11 @@
-import express from "express";
-import * as usuarioController from "../controllers/usuarioController.js";
+import express from 'express';
+// Importamos las funciones específicas del controlador
+import { login, register } from '../controllers/usuarioController.js';
 
 const router = express.Router();
 
-router.post("/registro", usuarioController.registrar);
-router.post("/login", usuarioController.login);
-router.get("/", usuarioController.listarUsuarios);
+// Definimos las rutas y les asignamos su función correspondiente
+router.post('/login', login);
+router.post('/registro', register); // Ahora ya no dará error porque 'register' existe
 
 export default router;

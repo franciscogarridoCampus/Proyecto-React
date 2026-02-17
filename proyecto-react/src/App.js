@@ -1,44 +1,54 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
+// Estilos
+import './App.css';
+
+// Componentes Reutilizables
 import { Header } from './componentes/Header/Header';
 import { Footer } from './componentes/Footer/Footer';
-import { Home } from './pages/Home';
-import { Axio } from './componentes/Axio/Axio';
+import { PrivateRoute } from './componentes/PrivateRoute/PrivateRoute';
 
-function Contenedor(props) {
-  return (
-    <div style={{ border: '2px solid #000', padding: '10px', margin: '20px 0' }}>
-      <h3>Contenedor</h3>
-      {props.children}
-    </div>
-  );
-}
+// Páginas (JSX)
+import { Home } from './pages/Home';
+import { Login } from './pages/Login';
+import { Cartelera } from './pages/Cartelera';
 
 function App() {
   return (
     <Router>
-      <Header />
+      <div className="d-flex flex-column min-vh-100 bg-light">
+        <Header />
+        
+        {/* El contenedor principal crece para empujar al footer abajo */}
+        <main className="flex-grow-1 py-4">
+          <Routes>
+            {/* RUTA PÚBLICA */}
+            <Route path="/login" element={<Login />} />
 
-      <main style={{ minHeight: '80vh', padding: '20px' }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<Home />} />
-          <Route path="/contact" element={<Home />} />
-        </Routes>
-      </main>
+            {/* RUTA PRINCIPAL (HOME): Ahora "/" carga Home directamente */}
+            <Route path="/" element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            } />
 
-      <Contenedor>
-        <p>Contenido de prueba dentro del contenedor.</p>
-        <button>Click aquí</button>
-        <p>Más texto de ejemplo.</p>
-      </Contenedor>
+            {/* OTRAS RUTAS PROTEGIDAS */}
+            <Route path="/cartelera" element={
+              <PrivateRoute>
+                <Cartelera />
+              </PrivateRoute>
+            } />
 
-      <Footer />
+            {/* COMODÍN: Si el usuario escribe cualquier cosa mal, lo manda a la Home */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </main>
 
-      <Axio />
+        <Footer />
+      </div>
     </Router>
   );
 }
 
-export { App, Contenedor };
+export { App };

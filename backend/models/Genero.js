@@ -1,7 +1,16 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import db from '../config/db.js';
 
-export const Genero = sequelize.define("Genero", {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  nombre: { type: DataTypes.STRING, allowNull: false, unique: true },
-}, { timestamps: false });
+const Genero = {
+    // Para que el Admin vea todos los géneros disponibles
+    getAll: async () => {
+        const [rows] = await db.query('SELECT * FROM generos ORDER BY nombre ASC');
+        return rows;
+    },
+    // Por si quieres que el Admin pueda añadir géneros nuevos
+    crear: async (nombre) => {
+        const [res] = await db.query('INSERT INTO generos (nombre) VALUES (?)', [nombre]);
+        return res.insertId;
+    }
+};
+
+export default Genero;
