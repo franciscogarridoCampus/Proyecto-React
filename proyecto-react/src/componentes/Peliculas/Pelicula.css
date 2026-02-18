@@ -1,0 +1,102 @@
+/* src/components/Peliculas/Pelicula.css */
+
+.clickable-card {
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border-radius: 16px;
+    background: linear-gradient(145deg, #23272b, #1d2124) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.clickable-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+    border-color: rgba(13, 202, 240, 0.3) !important;
+}
+
+.contenedor-poster {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    background-color: #111;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.efecto-zoom {
+    transition: transform 0.8s ease;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.clickable-card:hover .efecto-zoom {
+    transform: scale(1.08);
+}
+
+.poster-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    pointer-events: none;
+}
+
+/* Botón Saber Más */
+.boton-saber-mas {
+    background-color: #0dcaf0;
+    border: none;
+    color: #000;
+    border-radius: 12px;
+    padding: 12px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.boton-saber-mas i {
+    transition: transform 0.3s ease;
+}
+
+.clickable-card:hover .boton-saber-mas {
+    background-color: #ffc107; /* Cambia a amarillo al hacer hover en la card para llamar la atención */
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.clickable-card:hover .boton-saber-mas i {
+    transform: rotate(90deg);
+}
+
+/* Admin Overlay */
+.admin-overlay {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.clickable-card:hover .admin-overlay {
+    opacity: 1;
+}
+
+.btn-admin {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.descripcion-corta {
+    display: -webkit-box;
+   
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+    min-height: 3em; /* Mantiene la altura aunque el texto sea corto */
+}

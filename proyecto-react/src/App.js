@@ -1,46 +1,68 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
-// Estilos
 import './App.css';
 
-// Componentes Reutilizables
 import { Header } from './componentes/Header/Header';
 import { Footer } from './componentes/Footer/Footer';
 import { PrivateRoute } from './componentes/PrivateRoute/PrivateRoute';
 
-// Páginas (JSX)
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Cartelera } from './pages/Cartelera';
+import { AdminCartelera } from './pages/AdminCartelera';
+import { DetallePelicula } from './pages/DetallePelicula';
+import PeliculaForm from './componentes/FormPelicula/PeliculaForm';
 
 function App() {
   return (
     <Router>
-      <div className="d-flex flex-column min-vh-100 bg-light">
+      <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: '#121212', color: 'white' }}>
         <Header />
         
-        {/* El contenedor principal crece para empujar al footer abajo */}
-        <main className="flex-grow-1 py-4">
+        <main className="flex-grow-1">
           <Routes>
-            {/* RUTA PÚBLICA */}
             <Route path="/login" element={<Login />} />
 
-            {/* RUTA PRINCIPAL (HOME): Ahora "/" carga Home directamente */}
+            {/* RUTAS PROTEGIDAS USUARIO */}
             <Route path="/" element={
               <PrivateRoute>
                 <Home />
               </PrivateRoute>
             } />
 
-            {/* OTRAS RUTAS PROTEGIDAS */}
             <Route path="/cartelera" element={
               <PrivateRoute>
                 <Cartelera />
               </PrivateRoute>
             } />
 
-            {/* COMODÍN: Si el usuario escribe cualquier cosa mal, lo manda a la Home */}
+            <Route path="/pelicula/:id" element={
+              <PrivateRoute>
+                <DetallePelicula />
+              </PrivateRoute>
+            } />
+
+            {/* RUTAS PROTEGIDAS ADMIN */}
+            <Route path="/admin-cartelera" element={
+              <PrivateRoute adminOnly={true}>
+                <AdminCartelera />
+              </PrivateRoute>
+            } />
+
+            {/* Ruta para Crear */}
+            <Route path="/admin-cartelera/nueva" element={
+              <PrivateRoute adminOnly={true}>
+                <PeliculaForm />
+              </PrivateRoute>
+            } />
+
+            {/* Ruta para Editar */}
+            <Route path="/admin-cartelera/editar/:id" element={
+              <PrivateRoute adminOnly={true}>
+                <PeliculaForm />
+              </PrivateRoute>
+            } />
+
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>

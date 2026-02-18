@@ -1,11 +1,8 @@
-import db from '../config/db.js'; // Asegúrate de que esta ruta a tu conexión sea correcta
+import db from '../config/db.js';
 
-// CONTROLADOR DE LOGIN
 export const login = async (req, res) => {
     const { email, contrasena } = req.body;
-
     try {
-        // 1. Buscamos al usuario por email en la base de datos
         const [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
         
         if (rows.length === 0) {
@@ -14,30 +11,41 @@ export const login = async (req, res) => {
 
         const usuario = rows[0];
 
-        // 2. COMPARACIÓN DIRECTA (Texto plano para que coincida con admin123)
+        // Comparación (Usando texto plano según tu código actual)
         if (contrasena === usuario.contrasena) {
-            // ÉXITO: Enviamos los datos que React guardará en el localStorage
             return res.json({
                 id: usuario.id,
-                nombre: usuario.nombre_usuario,
+                nombre_usuario: usuario.nombre_usuario, // Nombre correcto para el frontend
+                email: usuario.email,
                 rol: usuario.rol
             });
         } else {
-            // FALLO: La contraseña no coincide
             return res.status(401).json({ mensaje: "Contraseña incorrecta" });
         }
-
     } catch (error) {
-        console.error(error);
         res.status(500).json({ mensaje: "Error interno del servidor" });
     }
 };
 
-// CONTROLADOR DE REGISTRO (Añadido para evitar errores en las rutas)
-export const register = async (req, res) => {
+// Nueva función para validar la contraseña al pulsar Gestionar
+export const validarPass = async (req, res) => {
+    const { email, contrasena } = req.body;
     try {
-        res.status(200).json({ mensaje: "Función de registro lista para implementar" });
+        const [rows] = await db.query(
+            'SELECT * FROM usuarios WHERE email = ? AND contrasena = ?', 
+            [email, contrasena]
+        );
+        
+        if (rows.length > 0) {
+            res.json({ valido: true });
+        } else {
+            res.json({ valido: false });
+        }
     } catch (error) {
-        res.status(500).json({ mensaje: "Error al registrar" });
+        res.status(500).json({ error: error.message });
     }
+};
+
+export const register = async (req, res) => {
+    res.status(200).json({ mensaje: "Función de registro lista" });
 };
