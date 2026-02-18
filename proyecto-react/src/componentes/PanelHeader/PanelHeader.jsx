@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PanelHeader.css';
 
-const PanelHeader = () => {
+const PanelHeader = ({ alVolver }) => {
     const navigate = useNavigate();
 
     return (
@@ -22,7 +22,7 @@ const PanelHeader = () => {
             <div className="d-flex gap-2">
                 <button 
                     className="btn btn-panel-secondary" 
-                    onClick={() => navigate('/cartelera')}
+                    onClick={alVolver} // <--- CAMBIO AQUÍ: Ahora llama a la función del padre
                 >
                     <i className="bi bi-arrow-left-short fs-5"></i> 
                     <span>Volver</span>

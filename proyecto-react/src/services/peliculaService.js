@@ -45,3 +45,4 @@ export const actualizarPelicula = async (id, datosActualizados) => {
         throw error;
     }
 };
+

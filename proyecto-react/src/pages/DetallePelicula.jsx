@@ -10,6 +10,7 @@ const DetallePelicula = () => {
     const [comentariosList, setComentariosList] = useState([]);
     const [error, setError] = useState(null);
 
+    // Obtenemos el usuario del localStorage para tener su ID y Nombre
     const user = JSON.parse(localStorage.getItem('usuarioLogueado'));
 
     useEffect(() => {
@@ -18,7 +19,14 @@ const DetallePelicula = () => {
                 const data = await obtenerPeliculaPorId(id);
                 if (data) {
                     setPelicula(data);
-                    setComentariosList(data.comentarios || []);
+                    // Mapeamos los comentarios que vienen del back (usando 'contenido') 
+                    // a la propiedad 'texto' que usa tu componente para renderizar
+                    const comentariosFormateados = (data.comentarios || []).map(c => ({
+                        nombre_usuario: c.nombre_usuario,
+                        texto: c.contenido || c.texto,
+                        fecha: c.creado_en || c.fecha
+                    }));
+                    setComentariosList(comentariosFormateados);
                 }
             } catch (err) {
                 console.error("Error al cargar la película:", err);
@@ -30,17 +38,26 @@ const DetallePelicula = () => {
 
     const enviarComentario = async (e) => {
         e.preventDefault();
-        if (!user || !comentario.trim()) return;
+        
+        // Validación para evitar errores 500 por datos nulos
+        if (!user || !user.id || !comentario.trim()) {
+            alert("Debes estar logueado para comentar.");
+            return;
+        }
 
+        // SINCRONIZACIÓN CLAVE: 
+        // Estos nombres deben ser id_pelicula, id_usuario y contenido
         const datosParaDB = {
-            id_pelicula: id,
+            id_pelicula: parseInt(id),
             id_usuario: user.id,
-            contenido: comentario
+            contenido: comentario 
         };
 
         try {
+            // Llamada al servicio que usa clienteAxios.post('/comentarios')
             await guardarComentario(datosParaDB);
             
+            // Actualización optimista: agregamos el comentario a la lista sin recargar la página
             const nuevoComentarioVista = {
                 nombre_usuario: user.nombre_usuario || user.nombre,
                 texto: comentario,
@@ -48,9 +65,10 @@ const DetallePelicula = () => {
             };
 
             setComentariosList([nuevoComentarioVista, ...comentariosList]);
-            setComentario("");
+            setComentario(""); // Limpiamos el input
         } catch (error) {
-            alert("Hubo un problema al guardar tu comentario.");
+            console.error("Error al guardar en DetallePelicula:", error);
+            alert("Hubo un error al guardar en el servidor. Revisa la consola.");
         }
     };
 
@@ -63,7 +81,7 @@ const DetallePelicula = () => {
                 <i className="bi bi-arrow-left me-1"></i> Volver a Cartelera
             </button>
 
-            <div className="row bg-dark p-4 rounded-4 shadow-lg border border-secondary">
+            <div className="row bg-dark p-4 rounded-4 shadow-lg border border-secondary text-start">
                 <div className="col-md-4 mb-4 mb-md-0 text-center">
                     <img 
                         src={pelicula.url_poster} 
@@ -102,16 +120,15 @@ const DetallePelicula = () => {
                             <i className="bi bi-chat-left-text-fill me-2"></i> Opiniones de la comunidad
                         </h4>
                         
+                        {/* Scroll de comentarios */}
                         <div className="bg-black bg-opacity-25 p-3 rounded-3 mb-4 shadow-inner" style={{maxHeight: '350px', overflowY: 'auto'}}>
                             {comentariosList.length > 0 ? (
                                 comentariosList.map((c, i) => (
-                                    <div key={i} className="mb-3 p-2 border-bottom border-secondary text-start">
+                                    <div key={i} className="mb-3 p-2 border-bottom border-secondary">
                                         <div className="d-flex justify-content-between">
                                             <strong className="text-warning">@{c.nombre_usuario}</strong>
                                             <small className="text-white-50">
-                                                {c.fecha && !isNaN(Date.parse(c.fecha)) 
-                                                    ? new Date(c.fecha).toLocaleDateString() 
-                                                    : 'Reciente'}
+                                                {c.fecha ? new Date(c.fecha).toLocaleDateString() : 'Reciente'}
                                             </small>
                                         </div>
                                         <p className="mb-0 mt-1 text-white">{c.texto}</p>
@@ -124,6 +141,7 @@ const DetallePelicula = () => {
                             )}
                         </div>
 
+                        {/* Formulario de comentario condicional al login */}
                         {user ? (
                             <form onSubmit={enviarComentario} className="input-group shadow-sm">
                                 <input 
@@ -132,8 +150,9 @@ const DetallePelicula = () => {
                                     placeholder="¿Qué te ha parecido?" 
                                     value={comentario}
                                     onChange={(e) => setComentario(e.target.value)}
+                                    required
                                 />
-                                <button className="btn btn-warning fw-bold px-4">Publicar</button>
+                                <button className="btn btn-warning fw-bold px-4" type="submit">Publicar</button>
                             </form>
                         ) : (
                             <div className="alert alert-info py-2 bg-info bg-opacity-10 border-info border-opacity-25 text-info text-center">

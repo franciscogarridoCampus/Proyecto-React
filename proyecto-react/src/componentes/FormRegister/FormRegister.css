@@ -1,0 +1,45 @@
+/* src/componentes/FormRegister/FormRegister.css */
+
+.card.bg-dark {
+    background-color: #1a1a1a !important; /* Un gris casi negro más elegante */
+    border: 1px solid #333 !important;
+}
+
+.form-control {
+    transition: all 0.3s ease;
+}
+
+/* Efecto al seleccionar los inputs */
+.form-control:focus {
+    background-color: #252525 !important;
+    border-color: #ffc107 !important; /* Color amarillo de Bootstrap */
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.3);
+    color: white !important;
+}
+
+/* Estilo para el icono superior */
+.bi-person-plus-fill {
+    filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.4));
+}
+
+/* Botón de registro con efecto hover */
+.btn-warning {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    background-color: #e0a800 !important;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+/* Ajuste para los textos de ayuda */
+.text-white-50 {
+    font-size: 0.9rem;
+}
+
+/* Sombra interna para los inputs */
+input::placeholder {
+    color: #666 !important;
+    font-size: 0.85rem;
+}

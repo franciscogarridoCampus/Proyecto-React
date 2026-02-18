@@ -32,11 +32,13 @@ function Cartelera() {
             if (esValido) {
                 setModalAbierto(false);
                 navigate("/admin-cartelera");
+                return true; // Acceso exitoso
             } else {
-                alert("❌ Contraseña incorrecta. Acceso denegado.");
+                return false; // Contraseña incorrecta, el modal mostrará el error
             }
         } catch (error) {
-            alert("Hubo un error al verificar la identidad.");
+            console.error("Error al verificar la identidad:", error);
+            return false;
         }
     };
 

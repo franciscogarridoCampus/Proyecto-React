@@ -44,7 +44,6 @@ function Header() {
     };
 
     return (
-        /* bg-black para que sea oscuro total y combine con el resto */
         <nav className="navbar navbar-expand-lg navbar-dark bg-black shadow sticky-top border-bottom border-secondary border-opacity-25">
             <div className="container">
                 <NavLink className="navbar-brand fw-bold" to="/" onClick={(e) => manejarNavegacionSegura(e, '/')}>
@@ -66,11 +65,12 @@ function Header() {
                         )}
                     </ul>
                     <div className="d-flex align-items-center">
-                        {user ? (
+                        {/* 👈 CAMBIO AQUÍ: Solo mostramos contenido si el usuario existe. 
+                            Si no hay usuario (null), no se renderizará nada a la derecha. */}
+                        {user && (
                             <>
                                 <span className="text-light me-3 small">
                                     Hola, <span className="text-info fw-bold">
-                                        {/* 👈 AQUÍ LA CORRECCIÓN: Buscamos ambos campos por seguridad */}
                                         {user.nombre_usuario || user.nombre || "Usuario"}
                                     </span>
                                 </span>
@@ -78,8 +78,6 @@ function Header() {
                                     <i className="bi bi-box-arrow-right me-1"></i> Salir
                                 </button>
                             </>
-                        ) : (
-                            <NavLink className="btn btn-primary btn-sm px-3 fw-bold" to="/login">Entrar</NavLink>
                         )}
                     </div>
                 </div>

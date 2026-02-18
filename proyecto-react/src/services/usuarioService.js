@@ -1,4 +1,3 @@
-// src/services/usuarioService.js
 import clienteAxios from '../api/axios.js';
 
 export const loginPost = async (email, contrasena) => {
@@ -6,12 +5,21 @@ export const loginPost = async (email, contrasena) => {
         const res = await clienteAxios.post('/usuarios/login', { email, contrasena });
         return res.data;
     } catch (error) {
-        // Esto te dirá en la consola de Chrome (F12) qué dice el servidor
-        if (error.response) {
-            console.error("Error del servidor:", error.response.data.mensaje);
-        } else {
-            console.error("Error de conexión: El servidor no responde");
-        }
+        throw error;
+    }
+};
+
+export const registroPost = async (nombre_usuario, email, contrasena) => {
+    try {
+        // Coincide con router.post('/registro', register) de tu usaurioRoute.js
+        const res = await clienteAxios.post('/usuarios/registro', { 
+            nombre_usuario, 
+            email, 
+            contrasena 
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Error en registro:", error.response?.data || error.message);
         throw error;
     }
 };

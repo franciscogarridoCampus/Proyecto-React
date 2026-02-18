@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Pelicula } from '../componentes/Peliculas/Pelicula';
 import { obtenerPeliculas, eliminarPelicula, guardarPelicula, actualizarPelicula } from '../services/peliculaService';
+import { cambiosService } from '../services/cambiosService'; 
 import PanelHeader from '../componentes/PanelHeader/PanelHeader';
 import EliminarPeli from '../componentes/EliminarPeli/EliminarPeli';
 import ConfirmarSalida from '../componentes/ConfirmarSalida/ConfirmarSalida';
@@ -9,130 +10,135 @@ import ConfirmarSalida from '../componentes/ConfirmarSalida/ConfirmarSalida';
 const AdminCartelera = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    
     const [peliculas, setPeliculas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [cambiosPendientes, setCambiosPendientes] = useState(false);
-    
-    // Listas para rastrear qué debemos hacer al final en el servidor
-    const [pendientesGuardar, setPendientesGuardar] = useState([]); 
-    const [pendientesBorrar, setPendientesBorrar] = useState([]);
 
     const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
     const [mostrarModalSalida, setMostrarModalSalida] = useState(false);
     const [peliSeleccionada, setPeliSeleccionada] = useState(null);
 
+    // 1. CARGA INICIAL
     useEffect(() => {
-        const cargarDatos = async () => {
+        const inicializarDatos = async () => {
             try {
-                const peliData = await obtenerPeliculas();
-                setPeliculas(peliData);
+                if (cambiosService.getListaVisual().length === 0) {
+                    const peliData = await obtenerPeliculas();
+                    cambiosService.setDatosIniciales(peliData);
+                }
+                setPeliculas(cambiosService.getListaVisual());
+                setCambiosPendientes(cambiosService.getColas().tieneCambios);
             } catch (error) {
-                console.error("Error al cargar películas:", error);
+                console.error("Error al inicializar:", error);
             } finally {
                 setCargando(false);
             }
         };
-        cargarDatos();
+        inicializarDatos();
     }, []);
 
-    // CAPTURAR CAMBIOS QUE VIENEN DEL FORMULARIO
+    // 2. CAPTURAR RETORNO DEL FORMULARIO
     useEffect(() => {
         if (location.state?.peliProcesada) {
-            const peli = location.state.peliProcesada;
-            
-            setPeliculas(prev => {
-                const existe = prev.find(p => p.id === peli.id);
-                if (existe) {
-                    return prev.map(p => p.id === peli.id ? peli : p);
-                }
-                return [peli, ...prev]; // Es nueva
-            });
-
-            // Agregamos a la cola de cambios para Axios
-            setPendientesGuardar(prev => [...prev.filter(p => p.id !== peli.id), peli]);
+            cambiosService.registrarCambio(location.state.peliProcesada);
+            setPeliculas([...cambiosService.getListaVisual()]);
             setCambiosPendientes(true);
+            window.history.replaceState({}, document.title);
         }
     }, [location.state]);
 
-    const prepararEliminar = (id) => {
-        const peli = peliculas.find(p => p.id === id);
+    // 3. GESTIÓN DE ELIMINACIÓN
+    const prepararEliminar = (peli) => {
         setPeliSeleccionada(peli);
         setMostrarModalEliminar(true);
     };
 
     const confirmarEliminacionVisual = () => {
-        // Guardamos el ID para borrarlo en la DB al final
-        if (!peliSeleccionada.esNueva) {
-            setPendientesBorrar(prev => [...prev, peliSeleccionada.id]);
-        }
-        // Quitamos de la vista
-        setPeliculas(peliculas.filter(p => p.id !== peliSeleccionada.id));
-        setCambiosPendientes(true);
+        cambiosService.registrarEliminacion(peliSeleccionada);
+        setPeliculas([...cambiosService.getListaVisual()]);
+        setCambiosPendientes(cambiosService.getColas().tieneCambios);
         setMostrarModalEliminar(false);
     };
 
-    // ACCIÓN DEFINITIVA CON AXIOS
+    // 4. PERSISTENCIA FINAL
     const aplicarCambiosEnServidor = async () => {
+        const { guardar, borrar } = cambiosService.getColas();
+        
         try {
-            // 1. Borrar lo marcado
-            for (const id of pendientesBorrar) {
+            // A. Borrados
+            for (const id of borrar) {
                 await eliminarPelicula(id);
             }
-            // 2. Guardar o Actualizar lo modificado
-            for (const peli of pendientesGuardar) {
+
+            // B. Guardados/Ediciones
+            for (const peli of guardar) {
+                const { esNueva, esBorrador, generos, ...peliLimpia } = peli;
                 if (peli.esNueva) {
-                    delete peli.esNueva; // Limpiamos flag temporal
-                    await guardarPelicula(peli);
+                    const { id, ...peliParaInsertar } = peliLimpia;
+                    await guardarPelicula(peliParaInsertar);
                 } else {
-                    await actualizarPelicula(peli.id, peli);
+                    await actualizarPelicula(peli.id, peliLimpia);
                 }
             }
+
+            // C. LIMPIEZA POST-GUARDADO
+            cambiosService.confirmarSincronizacion();
+            setPeliculas([...cambiosService.getListaVisual()]);
             setCambiosPendientes(false);
-            navigate('/'); // Ahora sí, volvemos a la cartelera pública
+            setMostrarModalSalida(false); 
+            
+            // He quitado el alert("¡Base de datos sincronizada correctamente!");
+            
+            navigate('/'); 
         } catch (error) {
-            alert("Error al sincronizar con el servidor");
+            console.error("Error en sincronización:", error);
+            // He quitado el alert de error para evitar ventanas del navegador
         }
     };
 
-    const manejarVolverConAviso = () => {
-        cambiosPendientes ? setMostrarModalSalida(true) : navigate('/');
-    };
-
-    if (cargando) return <div className="vh-100 bg-dark text-center pt-5 text-warning">Cargando Cartelera...</div>;
+    if (cargando) return (
+        <div className="vh-100 bg-dark d-flex align-items-center justify-content-center text-white">
+            <div className="spinner-border text-warning me-3"></div> Conectando con el servidor...
+        </div>
+    );
 
     return (
         <div className="container mt-4 mb-5 animate__animated animate__fadeIn">
-            <PanelHeader alVolver={manejarVolverConAviso} />
+            {/* Se mantiene la lógica para que el botón Volver active el modal si hay cambios */}
+            <PanelHeader alVolver={() => (cambiosService.getColas().tieneCambios ? setMostrarModalSalida(true) : navigate('/'))} />
 
             {cambiosPendientes && (
-                <div className="alert alert-warning border-0 bg-warning text-dark fw-bold text-center rounded-pill mb-4 shadow">
+                <div className="alert border-0 bg-info text-dark fw-bold text-center rounded-pill mb-4 shadow-sm animate__animated animate__pulse animate__infinite">
                     <i className="bi bi-info-circle-fill me-2"></i>
-                    MODO EDICIÓN ACTIVO: Los cambios no son permanentes hasta que confirmes.
+                    MODO PREVIA: Tienes cambios locales pendientes de guardar.
                 </div>
             )}
 
-            <div className="row g-4 mb-5">
+            <div className="row g-4 mb-5 pb-5">
                 {peliculas.map(p => (
                     <Pelicula 
                         key={p.id} 
                         pelicula={p} 
                         esAdmin={true} 
                         alEditar={(peli) => navigate(`/admin-cartelera/editar/${peli.id}`, { state: { peliActual: peli } })} 
-                        alEliminar={() => prepararEliminar(p.id)}
+                        alEliminar={() => prepararEliminar(p)}
                     />
                 ))}
             </div>
 
-            <div className="fixed-bottom bg-dark border-top border-secondary p-3 d-flex justify-content-center shadow-lg">
+            {/* Botón Flotante Inferior */}
+            <div className="fixed-bottom bg-dark border-top border-secondary p-3 d-flex justify-content-center shadow-lg" style={{zIndex: 1030}}>
                 <button 
-                    className={`btn ${cambiosPendientes ? 'btn-warning shadow' : 'btn-outline-secondary'} px-5 py-2 fw-bold rounded-pill`}
+                    className={`btn ${cambiosPendientes ? 'btn-danger pulse-animation shadow' : 'btn-outline-secondary'} px-5 py-2 fw-bold rounded-pill`}
                     onClick={aplicarCambiosEnServidor}
                     disabled={!cambiosPendientes}
                 >
-                    {cambiosPendientes ? 'GUARDAR CAMBIOS EN BASE DE DATOS' : 'SIN CAMBIOS PENDIENTES'}
+                    {cambiosPendientes ? 'CONFIRMAR Y GUARDAR EN DB' : 'TODO SINCRONIZADO'}
                 </button>
             </div>
 
+            {/* Modal Eliminar */}
             <EliminarPeli 
                 mostrar={mostrarModalEliminar}
                 nombrePeli={peliSeleccionada?.titulo}
@@ -140,10 +146,14 @@ const AdminCartelera = () => {
                 alCancelar={() => setMostrarModalEliminar(false)}
             />
 
+            {/* Modal Salida */}
             <ConfirmarSalida 
                 mostrar={mostrarModalSalida}
                 alGuardar={aplicarCambiosEnServidor}
-                alSalirSinGuardar={() => navigate('/')}
+                alSalirSinGuardar={() => {
+                    cambiosService.limpiarCaches();
+                    navigate('/');
+                }}
                 alCancelar={() => setMostrarModalSalida(false)}
             />
         </div>

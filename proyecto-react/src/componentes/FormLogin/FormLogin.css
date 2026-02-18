@@ -1,0 +1,77 @@
+/* Contenedor principal para centrar el login */
+.login-wrapper {
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Tarjeta de Login con estilo Dark */
+.login-card {
+    background-color: #1a1d20; /* Gris muy oscuro */
+    border: 1px solid #343a40;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Estilo de los iconos de los inputs */
+.input-group-text {
+    background-color: #2b3035 !important;
+    color: #0dcaf0 !important; /* Color info de Bootstrap */
+    border: 1px solid #495057 !important;
+    border-right: none !important;
+}
+
+/* Estilo de los campos de texto */
+.login-card .form-control {
+    background-color: #1a1d20 !important;
+    color: white !important;
+    border: 1px solid #495057 !important;
+    border-left: none !important;
+    padding: 10px 12px;
+}
+
+.login-card .form-control:focus {
+    box-shadow: none;
+    border-color: #0dcaf0 !important;
+}
+
+/* Placeholder en gris claro */
+.login-card .form-control::placeholder {
+    color: #6c757d;
+    opacity: 0.8;
+}
+
+/* Botón con efecto de brillo */
+.btn-info {
+    background-color: #0dcaf0;
+    border: none;
+    color: #000;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-info:hover {
+    background-color: #31d2f2;
+    box-shadow: 0 0 15px rgba(13, 202, 240, 0.4);
+    transform: scale(1.02);
+}
+
+/* Animación para el mensaje de error */
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    color: #ea868f;
+    font-weight: 500;
+}
+
+/* Ajuste para los iconos grandes */
+.display-3 {
+    filter: drop-shadow(0 0 10px rgba(13, 202, 240, 0.2));
+}

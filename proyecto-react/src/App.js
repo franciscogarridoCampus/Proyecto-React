@@ -8,6 +8,7 @@ import { PrivateRoute } from './componentes/PrivateRoute/PrivateRoute';
 
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
+import { Registro } from './pages/Registro'; // <--- IMPORTACIÓN NUEVA
 import { Cartelera } from './pages/Cartelera';
 import { AdminCartelera } from './pages/AdminCartelera';
 import { DetallePelicula } from './pages/DetallePelicula';
@@ -22,6 +23,7 @@ function App() {
         <main className="flex-grow-1">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/registro" element={<Registro />} /> {/* <--- RUTA NUEVA */}
 
             {/* RUTAS PROTEGIDAS USUARIO */}
             <Route path="/" element={
@@ -49,14 +51,12 @@ function App() {
               </PrivateRoute>
             } />
 
-            {/* Ruta para Crear */}
             <Route path="/admin-cartelera/nueva" element={
               <PrivateRoute adminOnly={true}>
                 <PeliculaForm />
               </PrivateRoute>
             } />
 
-            {/* Ruta para Editar */}
             <Route path="/admin-cartelera/editar/:id" element={
               <PrivateRoute adminOnly={true}>
                 <PeliculaForm />

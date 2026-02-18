@@ -1,6 +1,5 @@
 import * as comentarioService from '../services/comentarioService.js';
 
-// ✅ Añadimos esta función que faltaba
 export const getComentarios = async (req, res) => {
     try {
         const { idPelicula } = req.params;
@@ -13,18 +12,24 @@ export const getComentarios = async (req, res) => {
 
 export const crearComentario = async (req, res) => {
     try {
-        const { pelicula_id, usuario_id, texto } = req.body;
+        // Ajustamos para que coincida con el objeto que manda el Front
+        const { id_pelicula, id_usuario, contenido } = req.body;
         
-        // Mapeamos los nombres del front a los de la DB
+        // Validación básica de seguridad
+        if (!id_pelicula || !id_usuario || !contenido) {
+            return res.status(400).json({ error: "Faltan campos obligatorios (id_pelicula, id_usuario o contenido)" });
+        }
+
         const datosParaDB = {
-            id_pelicula: pelicula_id,
-            id_usuario: usuario_id,
-            contenido: texto
+            id_pelicula,
+            id_usuario,
+            contenido
         };
 
         await comentarioService.guardarComentario(datosParaDB);
-        res.status(201).json({ mensaje: "Comentario añadido" });
+        res.status(201).json({ mensaje: "Comentario añadido correctamente" });
     } catch (err) {
+        console.error("Error en crearComentario:", err);
         res.status(500).json({ error: err.message });
     }
 };
