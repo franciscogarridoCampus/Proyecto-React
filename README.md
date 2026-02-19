@@ -22,3 +22,8 @@ PORT=3000
 ## 2. Usuarios
 ('admin', 'admin@cine.com', '123'),
 ('usuario1', 'user1@cine.com', '123');
+
+##3.Instalar depedencias e iniciar
+Tener abierto xampp con SQL y apache, entrar en phpmyadmin crear un database con el .sql
+Entrar en backend y proyecto-react y suar npx npm install
+Luego para inicar backend node server.js y luego en el proyecto-react usar npm start
