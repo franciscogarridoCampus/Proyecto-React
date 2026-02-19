@@ -17,7 +17,7 @@ DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=proyectoreact_db
-PORT=4000
+PORT=3000
 ```
 ## 2. Usuarios
 ('admin', 'admin@cine.com', '123'),
